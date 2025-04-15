@@ -202,7 +202,6 @@ def train_CQL(env, replay_buffer, is_atari, num_actions, state_dim, device, args
         num_actions,
         state_dim,
         device,
-        args.CQL_alpha,
         parameters["discount"],
         parameters["optimizer"],
         parameters["optimizer_parameters"],
@@ -212,10 +211,12 @@ def train_CQL(env, replay_buffer, is_atari, num_actions, state_dim, device, args
         parameters["initial_eps"],
         parameters["end_eps"],
         parameters["eps_decay_period"],
-        parameters["eval_eps"]
+        parameters["eval_eps"],
+		args.CQL_alpha,
     )
 
     replay_buffer.load(f"./buffers/{buffer_name}")
+	
     evaluations = []
     training_iters = 0
 

@@ -171,12 +171,12 @@ class discrete_BCQ(object):
 
 	def polyak_target_update(self):
 		for param, target_param in zip(self.Q.parameters(), self.Q_target.parameters()):
-		   target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+			target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
 
 	def copy_target_update(self):
 		if self.iterations % self.target_update_frequency == 0:
-			 self.Q_target.load_state_dict(self.Q.state_dict())
+			self.Q_target.load_state_dict(self.Q.state_dict())
 	
 	def save(self, filename):
 		torch.save({
