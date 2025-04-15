@@ -8,6 +8,7 @@ import numpy as np
 import torch
 
 import discrete_BCQ
+import discrete_CQL
 import DQN
 import utils
 import wandb
@@ -192,6 +193,64 @@ def train_BCQ(env, replay_buffer, is_atari, num_actions, state_dim, device, args
 	
 	policy.save(f"./models/bcq_{setting}")
 
+def train_CQL(env, replay_buffer, is_atari, num_actions, state_dim, device, args, parameters):
+    setting = f"{args.env}_{args.seed}"
+    buffer_name = f"{args.buffer_name}_{setting}"
+
+    policy = discrete_CQL.discrete_CQL(
+        is_atari,
+        num_actions,
+        state_dim,
+        device,
+        args.CQL_alpha,
+        parameters["discount"],
+        parameters["optimizer"],
+        parameters["optimizer_parameters"],
+        parameters["polyak_target_update"],
+        parameters["target_update_freq"],
+        parameters["tau"],
+        parameters["initial_eps"],
+        parameters["end_eps"],
+        parameters["eps_decay_period"],
+        parameters["eval_eps"]
+    )
+
+    replay_buffer.load(f"./buffers/{buffer_name}")
+    evaluations = []
+    training_iters = 0
+
+    print("CQL Training started.")
+
+    while training_iters < args.max_timesteps:
+        epoch_metrics = []
+        for _ in range(int(parameters["eval_freq"])):
+            metrics = policy.train(replay_buffer)
+            epoch_metrics.append(metrics)
+
+        avg_metrics = {
+            k: np.mean([m[k] for m in epoch_metrics])
+            for k in epoch_metrics[0].keys()
+        }
+
+        evaluations.append(eval_policy(policy, args.env, args.seed))
+        np.save(f"./results/CQL_{setting}", evaluations)
+        policy.save(f"./models/cql_{setting}.pt")
+
+        wandb.log({
+            "CQL/total_loss": avg_metrics["total_loss"],
+            "CQL/q_loss": avg_metrics["q_loss"],
+            "CQL/regularizer": avg_metrics["regularizer"],
+            "CQL/q_values_mean": avg_metrics["q_values_mean"],
+            "CQL/target_q_mean": avg_metrics["target_q_mean"]
+        }, step=training_iters)
+
+        print(f"[CQL] Iteration: {training_iters} | Total Loss: {avg_metrics['total_loss']:.3f}")
+
+        training_iters += int(parameters["eval_freq"])
+
+    policy.save(f"./models/cql_{setting}.pt")
+
+
 
 # Runs policy for X episodes and returns average reward
 # A fixed seed is used for the eval environment
@@ -286,6 +345,9 @@ if __name__ == "__main__":
 	parser.add_argument("--rand_action_p", default=0.2, type=float)# Probability of taking a random action when generating buffer, during non-low noise episode
 	parser.add_argument("--train_behavioral", action="store_true") # If true, train behavioral policy
 	parser.add_argument("--generate_buffer", action="store_true")  # If true, generate buffer
+	parser.add_argument("--train_cql", action="store_true", help="Train with Conservative Q-Learning")
+	parser.add_argument("--CQL_alpha", default=1.0, type=float, help="Regularization strength for CQL")
+
 	args = parser.parse_args()
 	
 	print("---------------------------------------")	
@@ -295,6 +357,9 @@ if __name__ == "__main__":
 	elif args.generate_buffer:
 		print(f"Setting: Generating buffer, Env: {args.env}, Seed: {args.seed}")
 		mode = "buffer"
+	elif args.train_cql:
+		print(f"Setting: Training CQL, Env: {args.env}, seed: {args.seed}")
+		mode = "CQL"
 	else:
 		print(f"Setting: Training BCQ, Env: {args.env}, Seed: {args.seed}")
 		mode = "BCQ"
@@ -319,7 +384,7 @@ if __name__ == "__main__":
 
 	print("Starting wandb, view at https://wandb.ai/")
 	wandb.init(
-		project='BCQ', 
+		project='atari', 
 		name=f"{mode}_{args.env}_seed{args.seed}_{time.strftime('%m%d%H%M%S')}",
 		config=parameters
 	)
@@ -337,5 +402,7 @@ if __name__ == "__main__":
 
 	if args.train_behavioral or args.generate_buffer:
 		interact_with_environment(env, replay_buffer, is_atari, num_actions, state_dim, device, args, parameters)
+	if args.train_cql:
+		train_CQL(env, replay_buffer, is_atari, num_actions, state_dim, device, args, parameters)
 	else:
 		train_BCQ(env, replay_buffer, is_atari, num_actions, state_dim, device, args, parameters)
