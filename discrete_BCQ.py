@@ -188,6 +188,14 @@ class discrete_BCQ(object):
 
 
 	def load(self, filename):
-		self.Q.load_state_dict(torch.load(filename + "_Q"))
+		# self.Q.load_state_dict(torch.load(filename + "_Q", map_location=self.device))
+		model_state_dict = torch.load(filename + "_Q", map_location=self.device)
+		self.Q.load_state_dict(model_state_dict['Q'], strict=False)
+
 		self.Q_target = copy.deepcopy(self.Q)
-		self.Q_optimizer.load_state_dict(torch.load(filename + "_optimizer"))
+		self.Q_target.load_state_dict(model_state_dict['Q_target'], strict=False)
+
+		if 'imt' in model_state_dict:
+			self.Q.i2.load_state_dict(model_state_dict['imt'], strict=False)
+
+		self.Q_optimizer.load_state_dict(torch.load(filename + "_optimizer", map_location=self.device))
