@@ -155,6 +155,6 @@ class discrete_CQL(object):
         torch.save(self.Q_optimizer.state_dict(), filename + "_optimizer")
 
     def load(self, filename):
-        self.Q.load_state_dict(torch.load(filename + "_Q"))
+        self.Q.load_state_dict(torch.load(filename + "_Q", map_location=self.device))
         self.Q_target = copy.deepcopy(self.Q)
-        self.Q_optimizer.load_state_dict(torch.load(filename + "_optimizer"))
+        self.Q_optimizer.load_state_dict(torch.load(filename + "_optimizer", map_location=self.device))

@@ -71,26 +71,44 @@ def run_demo(env, is_atari, num_actions, state_dim, device, args, parameters):
     #     parameters["eps_decay_period"],
     #     parameters["eval_eps"],
     # )
-    policy = discrete_BCQ.discrete_BCQ(
-		is_atari,
-		num_actions,
-		state_dim,
-		device,
-		args.BCQ_threshold,
-		parameters["discount"],
-		parameters["optimizer"],
-		parameters["optimizer_parameters"],
-		parameters["polyak_target_update"],
-		parameters["target_update_freq"],
-		parameters["tau"],
-		parameters["initial_eps"],
-		parameters["end_eps"],
-		parameters["eps_decay_period"],
-		parameters["eval_eps"]
-	)
+    # policy = discrete_BCQ.discrete_BCQ(
+	# 	is_atari,
+	# 	num_actions,
+	# 	state_dim,
+	# 	device,
+	# 	args.BCQ_threshold,
+	# 	parameters["discount"],
+	# 	parameters["optimizer"],
+	# 	parameters["optimizer_parameters"],
+	# 	parameters["polyak_target_update"],
+	# 	parameters["target_update_freq"],
+	# 	parameters["tau"],
+	# 	parameters["initial_eps"],
+	# 	parameters["end_eps"],
+	# 	parameters["eps_decay_period"],
+	# 	parameters["eval_eps"]
+	# )
+    policy = discrete_CQL.discrete_CQL(
+        is_atari,
+        num_actions,
+        state_dim,
+        device,
+        parameters["discount"],
+        parameters["optimizer"],
+        parameters["optimizer_parameters"],
+        parameters["polyak_target_update"],
+        parameters["target_update_freq"],
+        parameters["tau"],
+        parameters["initial_eps"],
+        parameters["end_eps"],
+        parameters["eps_decay_period"],
+        parameters["eval_eps"],
+		args.CQL_alpha,
+    )
 
     try:
-        policy.load(f"./models/bcq_{setting}")
+        # policy.load(f"./models/bcq_{setting}")
+        policy.load(f"./models/cql_{setting}")
         print(f"✅ Model Loading Successfully from path.")
     except Exception as e:
         print(f"❌ Model Loading Failed: {str(e)}")
