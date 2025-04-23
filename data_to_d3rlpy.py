@@ -32,7 +32,7 @@ def toMDP(args, chunk=int(1e5)):
             print(f"Observation data (batch {k}) loaded.")
         crt = end
         end = min(end + chunk, crt_size + 1)
-        k =+ 1
+        k = k + 1
     print("Observation data fully loaded.")
 
     dataset = d3rlpy.dataset.MDPDataset(
