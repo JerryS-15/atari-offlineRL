@@ -6,13 +6,16 @@ def toMDP(args, chunk=int(1e5)):
     setting = f"{args.env}_{args.seed}"
     buffer_name = f"{args.buffer_name}_{setting}"
 
-
+    print("Start data loading ...")
     actions = np.load(f"./buffers/{buffer_name}_action.npy")
+    print("Action data loaded.")
     rewards = np.load(f"./buffers/{buffer_name}_reward.npy")
+    print("Reward data loaded.")
     terminals = np.load(f"./buffers/{buffer_name}_not_done.npy")
+    print("Terminal data loaded.")
 
     crt_size = rewards.shape[0]
-    print("Data size: ", crt_size)
+    # print("Data size: ", crt_size)
 
     # observations = np.array
 
@@ -22,10 +25,12 @@ def toMDP(args, chunk=int(1e5)):
         temp = np.load(f"./buffers/{buffer_name}_state_{end}.npy")
         if end == chunk:
             observations = temp
+            print("Observation data (first batch) laoded.")
         else:
-            observations = np.concatenate(observations, temp)
+            observations = np.concatenate((observations, temp))
         crt = end
         end = min(end + chunk, crt_size + 1)
+    print("Observation data fully loaded.")
 
     dataset = d3rlpy.dataset.MDPDataset(
     observations=observations,
