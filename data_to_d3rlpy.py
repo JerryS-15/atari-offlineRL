@@ -21,15 +21,18 @@ def toMDP(args, chunk=int(1e5)):
 
     crt = 0
     end = min(chunk, crt_size + 1)
+    k = 1
     while crt < crt_size + 1:
         temp = np.load(f"./buffers/{buffer_name}_state_{end}.npy")
         if end == chunk:
             observations = temp
-            print("Observation data (first batch) laoded.")
+            print(f"Observation data (batch {k}) loaded.")
         else:
             observations = np.concatenate((observations, temp))
+            print(f"Observation data (batch {k}) loaded.")
         crt = end
         end = min(end + chunk, crt_size + 1)
+        k =+ 1
     print("Observation data fully loaded.")
 
     dataset = d3rlpy.dataset.MDPDataset(
