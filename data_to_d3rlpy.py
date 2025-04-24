@@ -1,6 +1,7 @@
 import d3rlpy
 import numpy as np
 import argparse
+import os
 
 def toMDP(args, chunk=int(1e5)):
     setting = f"{args.env}_{args.seed}"
@@ -64,7 +65,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    print("------------------------------")
+
     data = toMDP(args)
 
-    print(type(data))
-    print(data.shape())
+    print("All data fully loaded.")
+    print("------------------------------")
+
+    if not os.path.exists("./d3Buffers"):
+        os.makedirs("./d3Buffers")
+
+    print("Generating .h5 file.")
+
+    data.dump(f"./d3Buffers/{args.env}_converted.h5")
+
+    print("Converted file generated. All done!")
+
+    # print(type(data))
+    # print(data.shape())
