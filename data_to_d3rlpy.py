@@ -81,5 +81,10 @@ if __name__ == "__main__":
 
     print("Converted file generated. All done!")
 
+    with open(f"./d3Buffers/{args.env}_converted.h5", "rb") as f:
+        parsed_dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
+
+    print(type(parsed_dataset))
+
     # print(type(data))
     # print(data.shape())
