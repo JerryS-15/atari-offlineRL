@@ -7,13 +7,14 @@ def toMDP(args, chunk=int(1e5)):
     setting = f"{args.env}_{args.seed}"
     buffer_name = f"{args.buffer_name}_{setting}"
 
-    print("Start data loading ...")
+    print(f"[INFO] Loading buffer: {buffer_name}")
     actions = np.load(f"./buffers/{buffer_name}_action.npy")
-    print("Action data loaded.")
+    print(f"[INFO] Actions loaded. Shape: {actions.shape}")
     rewards = np.load(f"./buffers/{buffer_name}_reward.npy")
-    print("Reward data loaded.")
+    print(f"[INFO] Rewards loaded. Shape: {rewards.shape}")
     terminals = np.load(f"./buffers/{buffer_name}_not_done.npy")
-    print("Terminal data loaded.")
+    terminals = 1 - terminals  # not_done -> done
+    print(f"[INFO] Terminals computed. Shape: {terminals.shape}")
 
     crt_size = rewards.shape[0]
     # print("Data size: ", crt_size)
@@ -27,14 +28,14 @@ def toMDP(args, chunk=int(1e5)):
         temp = np.load(f"./buffers/{buffer_name}_state_{end}.npy")
         if end == chunk:
             observations = temp
-            print(f"Observation data (batch {k}) loaded.")
+            print(f"[INFO] Observation chunk {k} loaded")
         else:
             observations = np.concatenate((observations, temp))
-            print(f"Observation data (batch {k}) loaded.")
+            print(f"[INFO] Observation chunk {k} loaded.")
         crt = end
         end = min(end + chunk, crt_size + 1)
         k = k + 1
-    print("Observation data fully loaded.")
+    print("[INFO] Observation data fully loaded.")
 
     dataset = d3rlpy.dataset.MDPDataset(
     observations=observations,
@@ -43,6 +44,7 @@ def toMDP(args, chunk=int(1e5)):
     terminals=terminals,
     )
 
+    print(f"[SUCCESS] Dataset created successfully!")
     return dataset
 
 
