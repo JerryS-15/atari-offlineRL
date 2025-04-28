@@ -52,7 +52,8 @@ def toMDP(args, chunk=int(1e5)):
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
-    parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--seed", default=0, type=int)
+    parser.add_argument("--buffer_name", default="Default")        # Prepends name to filename
     parser.add_argument("--gpu", type=int)
     parser.add_argument("--pre-stack", action="store_true")
     parser.add_argument("--compile", action="store_true")
