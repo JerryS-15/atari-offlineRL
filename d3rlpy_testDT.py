@@ -90,6 +90,7 @@ def main() -> None:
 
     # env = gym.make(args.game)
     env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    env.seed(args.seed)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
@@ -100,7 +101,7 @@ def main() -> None:
     #     pre_stack=args.pre_stack,
     # )
 
-    d3rlpy.envs.seed_env(env, args.seed)
+    # d3rlpy.envs.seed_env(env, args.seed)
 
     if args.game == "PongNoFrameskip-v4":
         batch_size = 64  # 512
