@@ -73,20 +73,20 @@ def main() -> None:
 
     d3rlpy.seed(args.seed)
 
-    print("------------------------------")
-    dataset = toMDP(args)
-    print("------------------------------")
+    # print("------------------------------")
+    # dataset = toMDP(args)
+    # print("------------------------------")
 
-    env = gym.make(args.game)
+    # env = gym.make(args.game)
 
-    # dataset, env = d3rlpy.datasets.get_atari_transitions(
-    #     args.game,
-    #     fraction=0.01,
-    #     index=1 if args.game == "asterix" else 0,
-    #     num_stack=4,
-    #     sticky_action=False,
-    #     pre_stack=args.pre_stack,
-    # )
+    dataset, env = d3rlpy.datasets.get_atari_transitions(
+        args.game,
+        fraction=0.01,
+        index=1 if args.game == "asterix" else 0,
+        num_stack=4,
+        sticky_action=False,
+        pre_stack=args.pre_stack,
+    )
 
     d3rlpy.envs.seed_env(env, args.seed)
 
