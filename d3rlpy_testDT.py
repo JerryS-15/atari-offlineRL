@@ -39,6 +39,9 @@ def toMDP(args, chunk=int(1e5)):
         k = k + 1
     print("[INFO] Observation data fully loaded.")
 
+    # Add channel dimension for grayscale image (1, 84, 84)
+    observations = observations[:, np.newaxis, :, :]
+
     dataset = d3rlpy.dataset.MDPDataset(
     observations=observations,
     actions=actions,
