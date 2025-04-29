@@ -35,7 +35,13 @@ def toMDP(args, chunk=int(1e5)):
         crt = end
         end = min(end + chunk, crt_size + 1)
         k = k + 1
-    print("[INFO] Observation data fully loaded.")
+    print(f"[INFO] Observation data fully loaded. Shape:", observations.shape, ", Type:", observations.dtype)
+
+    print("[INFO] Before creating MDPDataset:")
+    print(f"Observations Type: {type(observations)}, Shape: {observations.shape}")
+    print(f"Actions Type: {type(actions)}, Shape: {actions.shape}")
+    print(f"Rewards Type: {type(rewards)}, Shape: {rewards.shape}")
+    print(f"Terminals Type: {type(terminals)}, Shape: {terminals.shape}")
 
     dataset = d3rlpy.dataset.MDPDataset(
     observations=observations,
@@ -45,6 +51,10 @@ def toMDP(args, chunk=int(1e5)):
     )
 
     print(f"[SUCCESS] Dataset created successfully!")
+
+    print("[INFO] After creating MDPDataset:")
+    print(f"Dataset Type: {type(dataset)}")
+
     return dataset
 
 
@@ -77,16 +87,16 @@ if __name__ == "__main__":
     if not os.path.exists("./d3Buffers"):
         os.makedirs("./d3Buffers")
 
-    print("Generating .h5 file.")
+    # print("Generating .h5 file.")
 
-    data.dump(f"./d3Buffers/{args.env}_converted.h5")
+    # data.dump(f"./d3Buffers/{args.env}_converted.h5")
 
-    print("Converted file generated. All done!")
+    # print("Converted file generated. All done!")
 
-    with open(f"./d3Buffers/{args.env}_converted.h5", "rb") as f:
-        parsed_dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
+    # with open(f"./d3Buffers/{args.env}_converted.h5", "rb") as f:
+    #     parsed_dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
 
-    print(type(parsed_dataset))
+    # print(type(parsed_dataset))
 
     # print(type(data))
     # print(data.shape())
