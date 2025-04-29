@@ -152,6 +152,7 @@ def main() -> None:
 
     n_steps_per_epoch = dataset.transition_count // batch_size
     n_steps = n_steps_per_epoch * 5
+    print("[INFO] Starting training... please wait for epoch to begin.")
     dt.fit(
         dataset,
         n_steps=n_steps,
