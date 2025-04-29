@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+import torch
 
 import d3rlpy
 import gym
@@ -82,8 +83,8 @@ def main() -> None:
     d3rlpy.envs.seed_env(env, args.seed)
 
     if args.game == "PongNoFrameskip-v4":
-        batch_size = 512
-        context_size = 50
+        batch_size = 64  # 512
+        context_size = 20  # 50
     else:
         batch_size = 128
         context_size = 30
@@ -147,4 +148,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    print("Using device:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU")
     main()
