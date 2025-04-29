@@ -3,9 +3,15 @@ import numpy as np
 import torch
 import wandb
 from d3rlpy.logging import WanDBAdapterFactory
+import os
 
 import d3rlpy
 import gym
+
+# debug
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+torch.set_num_threads(1)
 
 
 def toMDP(args, chunk=int(1e5)):
@@ -85,8 +91,8 @@ def main() -> None:
     d3rlpy.envs.seed_env(env, args.seed)
 
     if args.game == "PongNoFrameskip-v4":
-        batch_size = 64  # 512
-        context_size = 20  # 50
+        batch_size = 32  # 512
+        context_size = 10  # 50
     else:
         batch_size = 128
         context_size = 30
@@ -144,7 +150,8 @@ def main() -> None:
         ),
         warmup_tokens=512 * 20,
         final_tokens=2 * 500000 * context_size * 3,
-        observation_scaler=d3rlpy.preprocessing.PixelObservationScaler(),
+        # observation_scaler=d3rlpy.preprocessing.PixelObservationScaler(),
+        observation_scaler=None,  # debug
         max_timestep=max_timestep,
         position_encoding_type=d3rlpy.PositionEncodingType.GLOBAL,
         compile_graph=args.compile,
