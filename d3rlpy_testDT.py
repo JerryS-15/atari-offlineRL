@@ -150,8 +150,8 @@ def main() -> None:
         ),
         warmup_tokens=512 * 20,
         final_tokens=2 * 500000 * context_size * 3,
-        # observation_scaler=d3rlpy.preprocessing.PixelObservationScaler(),
-        observation_scaler=None,  # debug
+        observation_scaler=d3rlpy.preprocessing.PixelObservationScaler(),
+        # observation_scaler=None,  # debug
         max_timestep=max_timestep,
         position_encoding_type=d3rlpy.PositionEncodingType.GLOBAL,
         compile_graph=args.compile,
