@@ -1,6 +1,8 @@
 import argparse
 import numpy as np
 import torch
+import wandb
+from d3rlpy.logging import WanDBAdapterFactory
 
 import d3rlpy
 import gym
@@ -99,6 +101,22 @@ def main() -> None:
         target_return = 1450
     else:
         raise ValueError(f"target_return is not defined for {args.game}")
+    
+    wandb.init(
+        project="d3rlpy",
+        name=f"DiscreteDT_{args.game}_{args.seed}",
+        config={
+            "game": args.game,
+            "seed": args.seed,
+            "context_size": context_size,
+            "batch_size": batch_size,
+            "target_return": target_return,
+            # "learning_rate": 6e-4,
+            "algo": "DiscreteDecisionTransformer"
+        }
+    )
+
+    wandb_factory = WanDBAdapterFactory(project="d3rlpy")
 
     # extract maximum timestep in dataset
     max_timestep = 0
@@ -144,9 +162,11 @@ def main() -> None:
             temperature=1.0,
         ),
         experiment_name=f"DiscreteDT_{args.game}_{args.seed}",
+        logger_adapter= wandb_factory,
     )
 
 
 if __name__ == "__main__":
     print("Using device:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU")
     main()
+    wandb.finish()
