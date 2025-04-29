@@ -91,8 +91,8 @@ def main() -> None:
     d3rlpy.envs.seed_env(env, args.seed)
 
     if args.game == "PongNoFrameskip-v4":
-        batch_size = 256  # 512
-        context_size = 50  # 50
+        batch_size = 64  # 512
+        context_size = 20  # 50
     else:
         batch_size = 128
         context_size = 30
@@ -139,8 +139,8 @@ def main() -> None:
         encoder_factory=d3rlpy.models.PixelEncoderFactory(
             feature_size=128, exclude_last_activation=True
         ),  # Nature DQN
-        num_heads=8,
-        num_layers=6,
+        num_heads=2,  # 8
+        num_layers=2,  # 6
         attn_dropout=0.1,
         embed_dropout=0.1,
         optim_factory=d3rlpy.optimizers.GPTAdamWFactory(
