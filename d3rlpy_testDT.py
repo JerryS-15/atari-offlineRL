@@ -7,6 +7,7 @@ import os
 
 import d3rlpy
 import gym
+import utils
 
 # debug
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -62,6 +63,16 @@ def toMDP(args, chunk=int(1e5)):
     return dataset
 
 def main() -> None:
+
+    atari_preprocessing = {
+		"frame_skip": 4,
+		"frame_size": 84,
+		"state_history": 4,
+		"done_on_life_loss": False,
+		"reward_clipping": True,
+		"max_episode_timesteps": 27e3
+	}
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
     parser.add_argument("--seed", default=0, type=int)
@@ -73,20 +84,21 @@ def main() -> None:
 
     d3rlpy.seed(args.seed)
 
-    # print("------------------------------")
-    # dataset = toMDP(args)
-    # print("------------------------------")
+    print("------------------------------")
+    dataset = toMDP(args)
+    print("------------------------------")
 
     # env = gym.make(args.game)
+    env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
 
-    dataset, env = d3rlpy.datasets.get_atari_transitions(
-        args.game,
-        fraction=0.01,
-        index=1 if args.game == "asterix" else 0,
-        num_stack=4,
-        sticky_action=False,
-        pre_stack=args.pre_stack,
-    )
+    # dataset, env = d3rlpy.datasets.get_atari_transitions(
+    #     args.game,
+    #     fraction=0.01,
+    #     index=1 if args.game == "asterix" else 0,
+    #     num_stack=4,
+    #     sticky_action=False,
+    #     pre_stack=args.pre_stack,
+    # )
 
     d3rlpy.envs.seed_env(env, args.seed)
 
@@ -134,7 +146,7 @@ def main() -> None:
         batch_size=batch_size,
         context_size=context_size,
         learning_rate=6e-4,
-        activation_type="gelu",
+        activation_type="relu",  # gelu
         embed_activation_type="tanh",
         encoder_factory=d3rlpy.models.PixelEncoderFactory(
             feature_size=128, exclude_last_activation=True
@@ -155,7 +167,7 @@ def main() -> None:
         max_timestep=max_timestep,
         position_encoding_type=d3rlpy.PositionEncodingType.GLOBAL,
         compile_graph=args.compile,
-    ).create(device=args.gpu)
+    ).create(device='cuda' if torch.cuda.is_available() else 'cpu')
 
     n_steps_per_epoch = dataset.transition_count // batch_size
     n_steps = n_steps_per_epoch * 5
