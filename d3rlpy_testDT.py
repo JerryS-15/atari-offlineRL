@@ -91,8 +91,8 @@ def main() -> None:
     d3rlpy.envs.seed_env(env, args.seed)
 
     if args.game == "PongNoFrameskip-v4":
-        batch_size = 32  # 512
-        context_size = 10  # 50
+        batch_size = 256  # 512
+        context_size = 50  # 50
     else:
         batch_size = 128
         context_size = 30
