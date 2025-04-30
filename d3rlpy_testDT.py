@@ -63,16 +63,68 @@ def toMDP(args, chunk=int(1e5)):
     print(f"[SUCCESS] Dataset created successfully!")
     return dataset
 
+def eval_policy(policy, env_name, seed, eval_episodes=10, target_return=None, temperature=1.0):
+    eval_env, _, _, _ = utils.make_env(env_name, atari_preprocessing)
+    eval_env.seed(seed + 100)
+    
+    action_sampler = d3rlpy.algos.SoftmaxTransformerActionSampler(temperature=temperature)
+
+    avg_reward = 0.
+    for _ in range(eval_episodes):
+        state = eval_env.reset()
+        done = False
+
+        # 初始化轨迹
+        states = []
+        actions = []
+        rewards = []
+
+        episode_reward = 0.
+
+        while not done:
+            # 追加当前状态
+            states.append(state)
+
+            # 构造输入
+            action = policy.predict(
+                states=states,
+                actions=actions,
+                rewards=rewards,
+                target_return=target_return,
+                action_sampler=action_sampler,
+                deterministic=False,
+            )
+
+            # 执行动作
+            next_state, reward, done, _ = eval_env.step(action)
+
+            # 记录轨迹
+            actions.append(action)
+            rewards.append(reward)
+            state = next_state
+            episode_reward += reward
+
+        avg_reward += episode_reward
+
+    avg_reward /= eval_episodes
+
+    print("---------------------------------------")
+    print(f"Evaluation over {eval_episodes} episodes: {avg_reward:.3f}")
+    print("---------------------------------------")
+    wandb.log({"Evaluation Reward": avg_reward, "Evaluation Episodes": eval_episodes})
+
+    return avg_reward
+
 def main() -> None:
 
-    atari_preprocessing = {
-		"frame_skip": 4,
-		"frame_size": 84,
-		"state_history": 4,
-		"done_on_life_loss": False,
-		"reward_clipping": True,
-		"max_episode_timesteps": 27e3
-	}
+    # atari_preprocessing = {
+    # 	"frame_skip": 4,
+    # 	"frame_size": 84,
+    # 	"state_history": 4,
+    # 	"done_on_life_loss": False,
+    # 	"reward_clipping": True,
+    # 	"max_episode_timesteps": 27e3
+    # }
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
@@ -90,8 +142,8 @@ def main() -> None:
     print("------------------------------")
 
     # env = gym.make(args.game)
-    env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
-    env.seed(args.seed)
+    # env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    # env.seed(args.seed)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
@@ -178,7 +230,7 @@ def main() -> None:
         dataset,
         n_steps=n_steps,
         n_steps_per_epoch=n_steps_per_epoch,
-        eval_env=env,
+        # eval_env=env,
         eval_target_return=target_return,
         eval_action_sampler=d3rlpy.algos.SoftmaxTransformerActionSampler(
             temperature=1.0,
@@ -187,8 +239,25 @@ def main() -> None:
         logger_adapter= wandb_factory,
     )
 
+    if not os.path.exists("./models"):
+        os.makedirs("./models")
+
+    dt.save_model(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt") 
+
+    eval_policy(dt, args.game, args.seed, eval_episodes=10, target_return=target_return)
+
 
 if __name__ == "__main__":
+
+    atari_preprocessing = {
+        "frame_skip": 4,
+        "frame_size": 84,
+        "state_history": 4,
+        "done_on_life_loss": False,
+        "reward_clipping": True,
+        "max_episode_timesteps": 27e3
+    }
+
     print("Using device:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU")
     main()
     wandb.finish()
