@@ -31,7 +31,7 @@ def toMDP(args, chunk=int(1e5)):
             print(f"[INFO] Observation chunk {k} loaded, Shape: {observations.shape}.")
         else:
             observations = np.concatenate((observations, temp))
-            print(f"[INFO] Observation chunk {k} loaded, , Shape: {observations.shape}.")
+            print(f"[INFO] Observation chunk {k} loaded, Shape: {observations.shape}.")
         crt = end
         end = min(end + chunk, crt_size + 1)
         k = k + 1
@@ -56,7 +56,7 @@ def toMDP(args, chunk=int(1e5)):
     print(f"Dataset Type: {type(dataset)}")
 
     print("[INFO] Dataset Summary:")
-    print(f"Number of transitions: {len(dataset)}")
+    # print(f"Number of transitions: {len(dataset)}")
     print(f"Observation shape: {dataset.get_observation_shape()}")
     print(f"Action shape: {dataset.get_action_size()}")
     print(f"Reward dtype: {dataset.rewards.dtype}, shape: {dataset.rewards.shape}")
