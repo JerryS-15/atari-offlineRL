@@ -8,7 +8,7 @@ import os
 
 import d3rlpy
 import gym
-# import utils
+import utils
 
 # debug
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -89,10 +89,9 @@ def main() -> None:
     dataset = toMDP(args)
     print("------------------------------")
 
-    env = gym.make(args.game)
-    env = wrap_env(env)
-    # env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
-    # env.seed(args.seed)
+    # env = gym.make(args.game)
+    env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    env.seed(args.seed)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
@@ -103,7 +102,7 @@ def main() -> None:
     #     pre_stack=args.pre_stack,
     # )
 
-    d3rlpy.envs.seed_env(env, args.seed)
+    # d3rlpy.envs.seed_env(env, args.seed)
 
     if args.game == "PongNoFrameskip-v4":
         batch_size = 64  # 512
