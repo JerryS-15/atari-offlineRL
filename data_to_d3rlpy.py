@@ -54,10 +54,12 @@ def toMDP(args, chunk=int(1e5)):
 
     print("[INFO] After creating MDPDataset:")
     print(f"Dataset Type: {type(dataset)}")
+    print(f"Dataset Shape: {dataset.size()}")
 
     print("[INFO] Dataset Summary:")
-    # print(f"Number of transitions: {len(dataset)}")
-    print(f"Observation shape: {dataset.observations.shape}, dtype: {dataset.observations.dtype}")
+    print(f"Episodes[0]: {dataset.episodes[0].size()}, dtype: {type(dataset.episodes[0])}")
+    print(f"{dataset.episodes[0]}")
+    print(f"Observation shape: {dataset.episodes[0].observation.size()}, dtype: {type(dataset.episodes[0].observation)}")
     print(f"Action shape: {dataset.actions.shape}, dtype: {dataset.actions.dtype}")
     print(f"Reward shape: {dataset.rewards.shape}, dtype: {dataset.rewards.dtype}")
     print(f"Terminal shape: {dataset.terminals.shape}, dtype: {dataset.terminals.dtype}")
