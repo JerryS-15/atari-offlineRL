@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import wandb
 from d3rlpy.logging import WanDBAdapterFactory
+from d3rlpy.envs import wrap_env
 import os
 
 import d3rlpy
@@ -89,6 +90,7 @@ def main() -> None:
     print("------------------------------")
 
     env = gym.make(args.game)
+    env = wrap_env(env)
     # env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
     # env.seed(args.seed)
 
