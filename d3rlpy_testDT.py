@@ -11,9 +11,9 @@ import gym
 import utils
 
 # debug
-os.environ["OMP_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"] = "1"
-torch.set_num_threads(1)
+# os.environ["OMP_NUM_THREADS"] = "1"
+# os.environ["MKL_NUM_THREADS"] = "1"
+# torch.set_num_threads(1)
 
 
 def toMDP(args, chunk=int(1e5)):
@@ -200,13 +200,13 @@ def main() -> None:
         batch_size=batch_size,
         context_size=context_size,
         learning_rate=6e-4,
-        activation_type="relu",  # gelu
+        activation_type="gelu",  # gelu
         embed_activation_type="tanh",
         encoder_factory=d3rlpy.models.PixelEncoderFactory(
             feature_size=128, exclude_last_activation=True
         ),  # Nature DQN
-        num_heads=2,  # 8
-        num_layers=2,  # 6
+        num_heads=8,  # 8 -> 2
+        num_layers=6,  # 6 -> 2
         attn_dropout=0.1,
         embed_dropout=0.1,
         optim_factory=d3rlpy.optimizers.GPTAdamWFactory(
