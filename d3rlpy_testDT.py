@@ -63,45 +63,50 @@ def toMDP(args, chunk=int(1e5)):
     print(f"[SUCCESS] Dataset created successfully!")
     return dataset
 
-def eval_policy(policy, env_name, seed, eval_episodes=10, target_return=None, temperature=1.0):
+def eval_policy(policy, env_name, seed, eval_episodes=10, target_return=20, temperature=1.0):
     eval_env, _, _, _ = utils.make_env(env_name, atari_preprocessing)
     eval_env.seed(seed + 100)
     
-    action_sampler = d3rlpy.algos.SoftmaxTransformerActionSampler(temperature=temperature)
+    # action_sampler = d3rlpy.algos.SoftmaxTransformerActionSampler(temperature=temperature)
 
     avg_reward = 0.
     for _ in range(eval_episodes):
         state = eval_env.reset()
         done = False
 
-        # 初始化轨迹
+        # Initialize trajectory
         states = []
         actions = []
         rewards = []
+        timesteps = []
 
+        rtg = target_return # Initialize return-to-go
         episode_reward = 0.
+        t = 0
 
         while not done:
-            # 追加当前状态
-            states.append(state)
 
-            # 构造输入
-            action = policy.predict(
+            timesteps.append(t)
+            t += 1
+
+            # Action prediction
+            action = policy(
                 states=states,
                 actions=actions,
                 rewards=rewards,
-                target_return=target_return,
-                action_sampler=action_sampler,
-                deterministic=False,
+                target_return=rtg,
+                timesteps=timesteps,
+                temperature=temperature
             )
 
-            # 执行动作
             next_state, reward, done, _ = eval_env.step(action)
 
-            # 记录轨迹
+            states.append(state)
             actions.append(action)
             rewards.append(reward)
+
             state = next_state
+            rtg -= reward
             episode_reward += reward
 
         avg_reward += episode_reward
@@ -115,7 +120,7 @@ def eval_policy(policy, env_name, seed, eval_episodes=10, target_return=None, te
 
     return avg_reward
 
-def main() -> None:
+def main(args) -> None:
 
     # atari_preprocessing = {
     # 	"frame_skip": 4,
@@ -126,14 +131,14 @@ def main() -> None:
     # 	"max_episode_timesteps": 27e3
     # }
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
-    parser.add_argument("--seed", default=0, type=int)
-    parser.add_argument("--buffer_name", default="Default")        # Prepends name to filename
-    parser.add_argument("--gpu", type=int)
-    parser.add_argument("--pre-stack", action="store_true")
-    parser.add_argument("--compile", action="store_true")
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
+    # parser.add_argument("--seed", default=0, type=int)
+    # parser.add_argument("--buffer_name", default="Default")        # Prepends name to filename
+    # parser.add_argument("--gpu", type=int)
+    # parser.add_argument("--pre-stack", action="store_true")
+    # parser.add_argument("--compile", action="store_true")
+    # args = parser.parse_args()
 
     d3rlpy.seed(args.seed)
 
@@ -258,6 +263,22 @@ if __name__ == "__main__":
         "max_episode_timesteps": 27e3
     }
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
+    parser.add_argument("--seed", default=0, type=int)
+    parser.add_argument("--buffer_name", default="Default")        # Prepends name to filename
+    parser.add_argument("--gpu", type=int)
+    parser.add_argument("--pre-stack", action="store_true")
+    parser.add_argument("--compile", action="store_true")
+    parser.add_argument("--eval", action="store_true")
+    args = parser.parse_args()
+
     print("Using device:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU")
-    main()
+
+    print("---------------------------------------")
+    if args.eval:
+        policy = torch.jit.load(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt")
+        eval_policy(policy, args.game, args.seed, eval_episodes=10)
+    else:
+        main(args)
     wandb.finish()
