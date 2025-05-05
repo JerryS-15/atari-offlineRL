@@ -277,8 +277,13 @@ if __name__ == "__main__":
 
     print("---------------------------------------")
     if args.eval:
-        policy = torch.jit.load(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt")
-        eval_policy(policy, args.game, args.seed, eval_episodes=10)
+        print("Evaluation Mode.")
+        model_path = f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt"
+        # policy = torch.jit.load(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt")
+        dt = d3rlpy.algos.DiscreteDecisionTransformer.load_model(model_path)
+        eval_policy(dt, args.game, args.seed, eval_episodes=10)
     else:
+        print("Training Mode.")
         main(args)
+    print("---------------------------------------")
     wandb.finish()
