@@ -144,7 +144,7 @@ def main(args) -> None:
 
     print("------------------------------")
     # dataset = toMDP(args)
-    with open(f"./d3Buffers/{args.env}_converted.h5", "rb") as f:
+    with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
         dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
     print("Dataset Loaded.")
     print("------------------------------")
