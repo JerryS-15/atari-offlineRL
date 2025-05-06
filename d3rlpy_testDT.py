@@ -249,7 +249,58 @@ def main(args) -> None:
 
     dt.save_model(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}_test.pt") 
 
-    eval_policy(dt, args.game, args.seed, eval_episodes=10, target_return=target_return)
+    # eval_policy(dt, args.game, args.seed, eval_episodes=10, target_return=target_return)
+
+    # Interaction test for evaluation
+    actor = dt.as_stateful_wrapper(target_return)
+
+    eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    eval_env.seed(args.seed + 100)
+
+    avg_reward = 0.
+    eval_episodes = 10
+    for _ in range(eval_episodes):
+        state = eval_env.reset()
+        done = False
+
+        # Initialize trajectory
+        states = []
+        actions = []
+        rewards = []
+        timesteps = []
+
+        rtg = target_return # Initialize return-to-go
+        episode_reward = 0.0
+        t = 0
+
+        while not done:
+
+            timesteps.append(t)
+            t += 1
+
+            # Action prediction
+            action = actor.predict(state, episode_reward)
+
+            next_state, reward, done, _ = eval_env.step(action)
+
+            states.append(state)
+            actions.append(action)
+            rewards.append(reward)
+
+            state = next_state
+            rtg -= reward
+            episode_reward += reward
+        
+        actor.reset()
+
+        avg_reward += episode_reward
+
+    avg_reward /= eval_episodes
+
+    print("---------------------------------------")
+    print(f"Evaluation over {eval_episodes} episodes: {avg_reward:.3f}")
+    print("---------------------------------------")
+    wandb.log({"Evaluation Reward": avg_reward, "Evaluation Episodes": eval_episodes})
 
 
 if __name__ == "__main__":
