@@ -108,11 +108,11 @@ if __name__ == "__main__":
     if not os.path.exists("./d3Buffers"):
         os.makedirs("./d3Buffers")
 
-    # print("Generating .h5 file.")
+    print("Generating .h5 file.")
 
-    # data.dump(f"./d3Buffers/{args.env}_converted.h5")
+    data.dump(f"./d3Buffers/{args.env}_converted.h5")
 
-    # print("Converted file generated. All done!")
+    print("Converted file generated. All done!")
 
     # with open(f"./d3Buffers/{args.env}_converted.h5", "rb") as f:
     #     parsed_dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
