@@ -143,10 +143,10 @@ def main(args) -> None:
     # d3rlpy.seed(args.seed)
 
     print("------------------------------")
-    # dataset = toMDP(args)
-    with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
-        dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
-    print("Dataset Loaded.")
+    dataset = toMDP(args)
+    # with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
+    #     dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
+    # print("Dataset Loaded.")
     print("------------------------------")
 
     # env = gym.make(args.game)
