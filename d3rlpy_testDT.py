@@ -54,10 +54,10 @@ def toMDP(args, chunk=int(1e5)):
     observations = observations[:, np.newaxis, :, :]
 
     dataset = d3rlpy.dataset.MDPDataset(
-    observations=observations,
-    actions=actions,
-    rewards=rewards,
-    terminals=terminals,
+        observations=observations,
+        actions=actions,
+        rewards=rewards,
+        terminals=terminals,
     )
 
     print(f"[SUCCESS] Dataset created successfully!")
@@ -143,7 +143,10 @@ def main(args) -> None:
     # d3rlpy.seed(args.seed)
 
     print("------------------------------")
-    dataset = toMDP(args)
+    # dataset = toMDP(args)
+    with open("dataset.h5", "rb") as f:
+        dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
+    print("Dataset Loaded.")
     print("------------------------------")
 
     # env = gym.make(args.game)
