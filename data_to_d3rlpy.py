@@ -44,10 +44,10 @@ def toMDP(args, chunk=int(1e5)):
     print(f"Terminals Type: {type(terminals)}, Shape: {terminals.shape}")
 
     dataset = d3rlpy.dataset.MDPDataset(
-    observations=observations,
-    actions=actions,
-    rewards=rewards,
-    terminals=terminals,
+        observations=observations,
+        actions=actions,
+        rewards=rewards,
+        terminals=terminals,
     )
 
     print(f"[SUCCESS] Dataset created successfully!")
@@ -59,21 +59,21 @@ def toMDP(args, chunk=int(1e5)):
     print("[INFO] Dataset Summary:")
     print(f"Episodes[0]: {dataset.episodes[0].size()}, dtype: {type(dataset.episodes[0])}")
     print(f"{dataset.episodes[0]}")
-    print(f"Observation shape: {dataset.episodes[0].observation.size()}, dtype: {type(dataset.episodes[0].observation)}")
-    print(f"Action shape: {dataset.actions.shape}, dtype: {dataset.actions.dtype}")
-    print(f"Reward shape: {dataset.rewards.shape}, dtype: {dataset.rewards.dtype}")
-    print(f"Terminal shape: {dataset.terminals.shape}, dtype: {dataset.terminals.dtype}")
+    # print(f"Observation shape: {dataset.episodes[0].observation.size()}, dtype: {type(dataset.episodes[0].observation)}")
+    # print(f"Action shape: {dataset.actions.shape}, dtype: {dataset.actions.dtype}")
+    # print(f"Reward shape: {dataset.rewards.shape}, dtype: {dataset.rewards.dtype}")
+    # print(f"Terminal shape: {dataset.terminals.shape}, dtype: {dataset.terminals.dtype}")
 
     # Get sample content for reference
-    print("\n[INFO] Sample transitions:")
-    for i in range(3):
-        obs, act, rew, next_obs, done = dataset[i]
-        print(f"Sample {i}:")
-        print(f"  obs shape: {obs.shape}, dtype: {obs.dtype}")
-        print(f"  action    : {act}, type: {type(act)}")
-        print(f"  reward    : {rew}, type: {type(rew)}")
-        print(f"  next_obs shape: {next_obs.shape}, dtype: {next_obs.dtype}")
-        print(f"  done      : {done}, type: {type(done)}")
+    # print("\n[INFO] Sample transitions:")
+    # for i in range(3):
+    #     obs, act, rew, next_obs, done = dataset[i]
+    #     print(f"Sample {i}:")
+    #     print(f"  obs shape: {obs.shape}, dtype: {obs.dtype}")
+    #     print(f"  action    : {act}, type: {type(act)}")
+    #     print(f"  reward    : {rew}, type: {type(rew)}")
+    #     print(f"  next_obs shape: {next_obs.shape}, dtype: {next_obs.dtype}")
+    #     print(f"  done      : {done}, type: {type(done)}")
 
 
     return dataset
@@ -110,7 +110,9 @@ if __name__ == "__main__":
 
     print("Generating .h5 file.")
 
-    data.dump(f"./d3Buffers/{args.env}_converted.h5")
+    # data.dump(f"./d3Buffers/{args.env}_converted.h5")
+    with open(f"./d3Buffers/{args.env}_converted.h5", "w+b") as f:
+        data.dump(f)
 
     print("Converted file generated. All done!")
 
