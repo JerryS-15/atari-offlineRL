@@ -140,15 +140,15 @@ def main(args) -> None:
     # parser.add_argument("--compile", action="store_true")
     # args = parser.parse_args()
 
-    d3rlpy.seed(args.seed)
+    # d3rlpy.seed(args.seed)
 
     print("------------------------------")
     dataset = toMDP(args)
     print("------------------------------")
 
     # env = gym.make(args.game)
-    # env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
-    # env.seed(args.seed)
+    env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    env.seed(args.seed)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
@@ -210,8 +210,8 @@ def main(args) -> None:
         encoder_factory=d3rlpy.models.PixelEncoderFactory(
             feature_size=128, exclude_last_activation=True
         ),  # Nature DQN
-        num_heads=8,  # 8 -> 2
-        num_layers=6,  # 6 -> 2
+        num_heads=2,  # 8 -> 2
+        num_layers=2,  # 6 -> 2
         attn_dropout=0.1,
         embed_dropout=0.1,
         optim_factory=d3rlpy.optimizers.GPTAdamWFactory(
@@ -235,7 +235,7 @@ def main(args) -> None:
         dataset,
         n_steps=n_steps,
         n_steps_per_epoch=n_steps_per_epoch,
-        # eval_env=env,
+        eval_env=env,
         eval_target_return=target_return,
         eval_action_sampler=d3rlpy.algos.SoftmaxTransformerActionSampler(
             temperature=1.0,
@@ -247,7 +247,7 @@ def main(args) -> None:
     if not os.path.exists("./models"):
         os.makedirs("./models")
 
-    dt.save_model(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt") 
+    dt.save_model(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}_test.pt") 
 
     eval_policy(dt, args.game, args.seed, eval_episodes=10, target_return=target_return)
 
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     print("---------------------------------------")
     if args.eval:
         print("Evaluation Mode.")
-        model_path = f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt"
+        model_path = f"./models/d3rlpy_dt_model_{args.game}_{args.seed}_test.pt"
         # policy = torch.jit.load(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}.pt")
         dt = d3rlpy.algos.DiscreteDecisionTransformer.load_model(model_path)
         eval_policy(dt, args.game, args.seed, eval_episodes=10)
