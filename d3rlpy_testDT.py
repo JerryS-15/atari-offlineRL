@@ -215,8 +215,6 @@ def main(args) -> None:
         embed_activation_type="tanh",
         encoder_factory=d3rlpy.models.PixelEncoderFactory(
             feature_size=128, exclude_last_activation=True,
-            filters=[(32, 8, 4), (64, 4, 2), (64, 3, 1)],  # Added for channel consistence
-            in_channels=4
         ),  # Nature DQN
         num_heads=2,  # 8 -> 2
         num_layers=2,  # 6 -> 2
