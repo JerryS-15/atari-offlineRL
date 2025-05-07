@@ -37,6 +37,9 @@ def toMDP(args, chunk=int(1e5)):
         k = k + 1
     print(f"[INFO] Observation data fully loaded. Shape:", observations.shape, ", Type:", observations.dtype)
 
+    # Add channel dimension for grayscale image (1, 84, 84)
+    observations = observations[:, np.newaxis, :, :]
+
     print("[INFO] Before creating MDPDataset:")
     print(f"Observations Type: {type(observations)}, Shape: {observations.shape}")
     print(f"Actions Type: {type(actions)}, Shape: {actions.shape}")

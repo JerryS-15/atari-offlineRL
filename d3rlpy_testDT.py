@@ -147,8 +147,8 @@ def main(args) -> None:
     with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
         dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
     # Add channel dimension for grayscale image (1, 84, 84)
-    dataset.observations = dataset.observations[:, None, :, :]
-    dataset.next_observations = dataset.next_observations[:, None, :, :]
+    # dataset.observations = dataset.observations[:, None, :, :]
+    # dataset.next_observations = dataset.next_observations[:, None, :, :]
     print("Dataset Loaded.")
     print("------------------------------")
 
