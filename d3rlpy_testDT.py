@@ -231,8 +231,9 @@ def main(args) -> None:
         compile_graph=args.compile,
     ).create(device='cuda' if torch.cuda.is_available() else 'cpu')
 
+    num_epoch = 1  # 5 -> 1
     n_steps_per_epoch = dataset.transition_count // batch_size
-    n_steps = n_steps_per_epoch * 5
+    n_steps = n_steps_per_epoch * num_epoch
     print("[INFO] Starting training... please wait for epoch to begin.")
     dt.fit(
         dataset,
@@ -257,7 +258,8 @@ def main(args) -> None:
     # Interaction test for evaluation
     actor = dt.as_stateful_wrapper(target_return)
 
-    eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    eval_env = gym.make(args.game)
+    # eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
     eval_env.seed(args.seed + 100)
 
     avg_reward = 0.
