@@ -12,6 +12,14 @@ def main() -> None:
     args = parser.parse_args()
 
     dataset, env = d3rlpy.datasets.get_dataset(args.dataset)
+    print("----------Data----------")
+    print(type(dataset))
+    print(dataset)
+    print("-----------------------")
+    print("----------Env----------")
+    print(type(env))
+    print(env.observation_space)
+    print("-----------------------")
 
     # fix seed
     d3rlpy.seed(args.seed)

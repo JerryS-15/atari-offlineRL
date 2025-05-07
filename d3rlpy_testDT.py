@@ -258,9 +258,11 @@ def main(args) -> None:
     # Interaction test for evaluation
     actor = dt.as_stateful_wrapper(target_return)
 
-    eval_env = gym.make(args.game)
-    # eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    # eval_env = gym.make(args.game)
+    eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
     eval_env.seed(args.seed + 100)
+    print(type(eval_env))
+    print(eval_env.observation_space)
 
     avg_reward = 0.
     eval_episodes = 10
