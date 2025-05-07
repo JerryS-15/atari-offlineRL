@@ -150,8 +150,11 @@ def main(args) -> None:
     print("------------------------------")
 
     # env = gym.make(args.game)
-    # env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
     # env.seed(args.seed)
+    eval_env.seed(args.seed + 100)
+    print(type(eval_env))
+    print(eval_env.observation_space)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
@@ -259,10 +262,8 @@ def main(args) -> None:
     actor = dt.as_stateful_wrapper(target_return)
 
     # eval_env = gym.make(args.game)
-    eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
-    eval_env.seed(args.seed + 100)
-    print(type(eval_env))
-    print(eval_env.observation_space)
+    # eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    # eval_env.seed(args.seed + 100)
 
     avg_reward = 0.
     eval_episodes = 10
