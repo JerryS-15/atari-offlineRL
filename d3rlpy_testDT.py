@@ -152,9 +152,9 @@ def main(args) -> None:
     # env = gym.make(args.game)
     eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
     # env.seed(args.seed)
-    eval_env.seed(args.seed + 100)
+
     print(type(eval_env))
-    print(eval_env.observation_space)
+    print(eval_env.observation_space.shape)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
