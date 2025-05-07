@@ -146,9 +146,6 @@ def main(args) -> None:
     # dataset = toMDP(args)
     with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
         dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
-    # Add channel dimension for grayscale image (1, 84, 84)
-    # dataset.observations = dataset.observations[:, None, :, :]
-    # dataset.next_observations = dataset.next_observations[:, None, :, :]
     print("Dataset Loaded.")
     print("------------------------------")
 
@@ -169,7 +166,7 @@ def main(args) -> None:
 
     if args.game == "PongNoFrameskip-v4":
         batch_size = 64  # 512
-        context_size = 20  # 50
+        context_size = 10  # 50
     else:
         batch_size = 128
         context_size = 30
