@@ -150,8 +150,8 @@ def main(args) -> None:
     print("------------------------------")
 
     # env = gym.make(args.game)
-    env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
-    env.seed(args.seed)
+    # env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
+    # env.seed(args.seed)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
@@ -238,7 +238,7 @@ def main(args) -> None:
         dataset,
         n_steps=n_steps,
         n_steps_per_epoch=n_steps_per_epoch,
-        eval_env=env,
+        # eval_env=env,
         eval_target_return=target_return,
         eval_action_sampler=d3rlpy.algos.SoftmaxTransformerActionSampler(
             temperature=1.0,
