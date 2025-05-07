@@ -286,6 +286,11 @@ def main(args) -> None:
             timesteps.append(t)
             t += 1
 
+            print("----------")
+            print(state.shape)
+            print(state)
+            print("----------")
+
             # Action prediction
             action = actor.predict(state, episode_reward)
 
