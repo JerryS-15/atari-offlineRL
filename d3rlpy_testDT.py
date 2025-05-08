@@ -120,31 +120,11 @@ def eval_policy(policy, env_name, seed, eval_episodes=10, target_return=20, temp
 
     return avg_reward
 
-def main(args) -> None:
-
-    # atari_preprocessing = {
-    # 	"frame_skip": 4,
-    # 	"frame_size": 84,
-    # 	"state_history": 4,
-    # 	"done_on_life_loss": False,
-    # 	"reward_clipping": True,
-    # 	"max_episode_timesteps": 27e3
-    # }
-
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
-    # parser.add_argument("--seed", default=0, type=int)
-    # parser.add_argument("--buffer_name", default="Default")        # Prepends name to filename
-    # parser.add_argument("--gpu", type=int)
-    # parser.add_argument("--pre-stack", action="store_true")
-    # parser.add_argument("--compile", action="store_true")
-    # args = parser.parse_args()
-
-    # d3rlpy.seed(args.seed)
+def main(args, parameters) -> None:
 
     print("------------------------------")
     # dataset = toMDP(args)
-    with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
+    with open(f"./d3Buffers/{args.game}_converted_c1.h5", "rb") as f:
         dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
     print("Dataset Loaded.")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -155,8 +135,8 @@ def main(args) -> None:
     eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
     # env.seed(args.seed)
 
-    print(type(eval_env))
-    print(eval_env.observation_space.shape)
+    # print(type(eval_env))
+    # print(eval_env.observation_space.shape)
 
     # dataset, env = d3rlpy.datasets.get_atari_transitions(
     #     args.game,
@@ -169,37 +149,28 @@ def main(args) -> None:
 
     # d3rlpy.envs.seed_env(env, args.seed)
 
-    if args.game == "PongNoFrameskip-v4":
-        batch_size = 256  # 512
-        context_size = 5  # 50
-    else:
-        batch_size = 128
-        context_size = 30
+    batch_size = parameters["batch_size"]
+    context_size = parameters["context_size"]
+    target_return = parameters["target_return"]
+    learning_rate = parameters["learning_rate"]
 
-    if args.game == "PongNoFrameskip-v4":
-        target_return = 20
-    elif args.game == "breakout":
-        target_return = 90
-    elif args.game == "qbert":
-        target_return = 2500
-    elif args.game == "seaquest":
-        target_return = 1450
-    else:
-        raise ValueError(f"target_return is not defined for {args.game}")
-    
-    wandb.init(
-        project="d3rlpy",
-        name=f"DiscreteDT_{args.game}_{args.seed}",
-        config={
-            "game": args.game,
-            "seed": args.seed,
-            "context_size": context_size,
-            "batch_size": batch_size,
-            "target_return": target_return,
-            # "learning_rate": 6e-4,
-            "algo": "DiscreteDecisionTransformer"
-        }
-    )
+    # if args.game == "PongNoFrameskip-v4":
+    #     batch_size = 256  # 512
+    #     context_size = 5  # 50
+    # else:
+    #     batch_size = 128
+    #     context_size = 30
+
+    # if args.game == "PongNoFrameskip-v4":
+    #     target_return = 20
+    # elif args.game == "breakout":
+    #     target_return = 90
+    # elif args.game == "qbert":
+    #     target_return = 2500
+    # elif args.game == "seaquest":
+    #     target_return = 1450
+    # else:
+    #     raise ValueError(f"target_return is not defined for {args.game}")
 
     wandb_factory = WanDBAdapterFactory(project="d3rlpy")
 
@@ -209,10 +180,16 @@ def main(args) -> None:
         max_timestep = max(max_timestep, episode.transition_count + 1)
     print(f"[INFO] Max timestep in dataset: {max_timestep}")
 
+    wandb.log({
+        "max_timestep": max_timestep,
+        "dataset_size": dataset.transition_count,
+        "n_episodes": len(dataset.episodes),
+    })
+
     dt = d3rlpy.algos.DiscreteDecisionTransformerConfig(
         batch_size=batch_size,
         context_size=context_size,
-        learning_rate=6e-4,
+        learning_rate=learning_rate,
         activation_type="gelu",  # gelu
         embed_activation_type="tanh",
         encoder_factory=d3rlpy.models.PixelEncoderFactory(
@@ -262,9 +239,6 @@ def main(args) -> None:
 
     # Interaction test for evaluation
     actor = dt.as_stateful_wrapper(target_return)
-
-    # eval_env = gym.make(args.game)
-    # eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
     # eval_env.seed(args.seed + 100)
 
     avg_reward = 0.
@@ -288,10 +262,10 @@ def main(args) -> None:
             timesteps.append(t)
             t += 1
 
-            print("----------")
-            print(state.shape)
-            print(state)
-            print("----------")
+            # print("----------")
+            # print(state.shape)
+            # print(state)
+            # print("----------")
 
             # Action prediction
             action = actor.predict(state, episode_reward)
@@ -329,6 +303,13 @@ if __name__ == "__main__":
         "max_episode_timesteps": 27e3
     }
 
+    atari_parameters = {
+        "batch_size": 256,  # 512
+        "context_size": 5,  # 50
+        "target_return": 20,
+        "learning_rate": 6e-4
+    }
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--game", type=str, default="PongNoFrameskip-v4")
     parser.add_argument("--seed", default=0, type=int)
@@ -341,6 +322,12 @@ if __name__ == "__main__":
 
     print("Using device:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU")
 
+    wandb.init(
+        project="d3rlpy",
+        name=f"DiscreteDT_{args.game}_{args.seed}",
+        config=atari_parameters
+    )
+
     print("---------------------------------------")
     if args.eval:
         print("Evaluation Mode.")
@@ -350,6 +337,6 @@ if __name__ == "__main__":
         eval_policy(dt, args.game, args.seed, eval_episodes=10)
     else:
         print("Training Mode.")
-        main(args)
+        main(args, atari_parameters)
     print("---------------------------------------")
     wandb.finish()
