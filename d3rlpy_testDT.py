@@ -234,7 +234,7 @@ def main(args) -> None:
         max_timestep=max_timestep,
         position_encoding_type=d3rlpy.PositionEncodingType.GLOBAL,
         compile_graph=args.compile,
-    ).create(device=device)
+    ).create(device='cuda' if torch.cuda.is_available() else 'cpu')
 
     if torch.cuda.device_count() > 1:
         dt._impl = torch.nn.DataParallel(dt._impl)
