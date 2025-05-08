@@ -168,8 +168,8 @@ def main(args) -> None:
     # d3rlpy.envs.seed_env(env, args.seed)
 
     if args.game == "PongNoFrameskip-v4":
-        batch_size = 64  # 512
-        context_size = 10  # 50
+        batch_size = 256  # 512
+        context_size = 5  # 50
     else:
         batch_size = 128
         context_size = 30
@@ -254,7 +254,7 @@ def main(args) -> None:
     if not os.path.exists("./models"):
         os.makedirs("./models")
 
-    dt.save_model(f"./models/d3rlpy_dt_model_{args.game}_{args.seed}_test.pt") 
+    dt.save_policy(f"./models/d3rlpy_dt_policy_{args.game}_{args.seed}_test.pt") 
 
     # eval_policy(dt, args.game, args.seed, eval_episodes=10, target_return=target_return)
 
