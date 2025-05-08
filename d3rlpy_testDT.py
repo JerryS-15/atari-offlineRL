@@ -147,6 +147,8 @@ def main(args) -> None:
     with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
         dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
     print("Dataset Loaded.")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
     print("------------------------------")
 
     # env = gym.make(args.game)
@@ -232,7 +234,10 @@ def main(args) -> None:
         max_timestep=max_timestep,
         position_encoding_type=d3rlpy.PositionEncodingType.GLOBAL,
         compile_graph=args.compile,
-    ).create(device='cuda' if torch.cuda.is_available() else 'cpu')
+    ).create(device=device)
+
+    if torch.cuda.device_count() > 1:
+        dt._impl = torch.nn.DataParallel(dt._impl)
 
     num_epoch = 1  # 5 -> 1
     n_steps_per_epoch = dataset.transition_count // batch_size
