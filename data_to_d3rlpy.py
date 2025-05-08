@@ -39,7 +39,7 @@ def toMDP(args, chunk=int(1e5)):
 
     # Add channel dimension for grayscale image (1, 84, 84)
     # observations = observations[:, np.newaxis, :, :]
-    np.repeat(observations[:, np.newaxis, :, :], 4, axis=1)
+    observations = np.repeat(observations[:, np.newaxis, :, :], 4, axis=1)
 
     print("[INFO] Before creating MDPDataset:")
     print(f"Observations Type: {type(observations)}, Shape: {observations.shape}")
