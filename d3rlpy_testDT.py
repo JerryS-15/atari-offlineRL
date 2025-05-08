@@ -236,9 +236,6 @@ def main(args) -> None:
         compile_graph=args.compile,
     ).create(device='cuda' if torch.cuda.is_available() else 'cpu')
 
-    if torch.cuda.device_count() > 1:
-        dt._impl = torch.nn.DataParallel(dt._impl)
-
     num_epoch = 1  # 5 -> 1
     n_steps_per_epoch = dataset.transition_count // batch_size
     n_steps = n_steps_per_epoch * num_epoch
