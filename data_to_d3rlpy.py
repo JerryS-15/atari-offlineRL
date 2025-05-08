@@ -40,7 +40,7 @@ def toMDP(args, chunk=int(1e5), stack=4):
     print("Preparing frame stacks ...")
 
     obs = []
-    next_obs = []
+    # next_obs = []
     valid_idx = []
 
     for i in range(stack - 1, crt_size):
@@ -54,11 +54,11 @@ def toMDP(args, chunk=int(1e5), stack=4):
             continue
 
         obs.append(observations[i - stack + 1:i + 1])         # shape: (4, 84, 84)
-        next_obs.append(observations[i - stack + 2:i + 2])    # shape: (4, 84, 84)
+        # next_obs.append(observations[i - stack + 2:i + 2])    # shape: (4, 84, 84)
         valid_idx.append(i)
 
     obs = np.stack(obs)  # (N, 4, 84, 84)
-    next_obs = np.stack(next_obs)
+    # next_obs = np.stack(next_obs)
     valid_idx = np.array(valid_idx)
 
     print(f"[INFO] Final stacked observations: {obs.shape}")
@@ -74,7 +74,7 @@ def toMDP(args, chunk=int(1e5), stack=4):
     # observations = np.repeat(observations[:, np.newaxis, :, :], 4, axis=1)
 
     print("[INFO] Before creating MDPDataset:")
-    print(f"Observations Type: {type(observations)}, Shape: {observations.shape}")
+    print(f"Observations Type: {type(obs)}, Shape: {obs.shape}")
     print(f"Actions Type: {type(actions)}, Shape: {actions.shape}")
     print(f"Rewards Type: {type(rewards)}, Shape: {rewards.shape}")
     print(f"Terminals Type: {type(terminals)}, Shape: {terminals.shape}")
@@ -82,10 +82,11 @@ def toMDP(args, chunk=int(1e5), stack=4):
     print(f"[INFO] Creating MDPDataset...")
 
     dataset = d3rlpy.dataset.MDPDataset(
-        observations=observations,
+        observations=obs,
         actions=actions,
         rewards=rewards,
         terminals=terminals,
+        # next_observations=next_obs
     )
 
     print(f"[SUCCESS] Dataset created successfully!")
