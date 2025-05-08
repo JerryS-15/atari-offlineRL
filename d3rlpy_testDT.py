@@ -144,7 +144,7 @@ def main(args) -> None:
 
     print("------------------------------")
     # dataset = toMDP(args)
-    with open(f"./d3Buffers/{args.game}_converted_c1.h5", "rb") as f:
+    with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
         dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
     print("Dataset Loaded.")
     print("------------------------------")
@@ -214,12 +214,7 @@ def main(args) -> None:
         activation_type="gelu",  # gelu
         embed_activation_type="tanh",
         encoder_factory=d3rlpy.models.PixelEncoderFactory(
-            feature_size=128, exclude_last_activation=True,
-            filters=[
-            [32, 8, 4, 4],  #  4 channels
-            [64, 4, 2],
-            [64, 3, 1]
-        ]
+            feature_size=128, exclude_last_activation=True
         ),  # Nature DQN
         num_heads=2,  # 8 -> 2
         num_layers=2,  # 6 -> 2
