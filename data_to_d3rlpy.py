@@ -48,6 +48,7 @@ def toMDP(args, chunk=int(1e5), stack=4):
         is_valid = True
         for j in range(i - stack + 1, i):
             if terminals[j] == 1:  # episode ended
+                print("... A whole episode has finished frame stacking.")
                 is_valid = False
                 break
         if not is_valid:
