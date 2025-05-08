@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import os
 
-def toMDP(args, chunk=int(1e5)):
+def toMDP(args, chunk=int(1e5), stack=4):
     setting = f"{args.env}_{args.seed}"
     buffer_name = f"{args.buffer_name}_{setting}"
 
@@ -37,15 +37,49 @@ def toMDP(args, chunk=int(1e5)):
         k = k + 1
     print(f"[INFO] Observation data fully loaded. Shape:", observations.shape, ", Type:", observations.dtype)
 
+    print("Preparing frame stacks ...")
+
+    obs = []
+    next_obs = []
+    valid_idx = []
+
+    for i in range(stack - 1, crt_size):
+        # Check if any early termination happened within the stack (optional)
+        is_valid = True
+        for j in range(i - stack + 1, i):
+            if terminals[j] == 1:  # episode ended
+                is_valid = False
+                break
+        if not is_valid:
+            continue
+
+        obs.append(observations[i - stack + 1:i + 1])         # shape: (4, 84, 84)
+        next_obs.append(observations[i - stack + 2:i + 2])    # shape: (4, 84, 84)
+        valid_idx.append(i)
+
+    obs = np.stack(obs)  # (N, 4, 84, 84)
+    next_obs = np.stack(next_obs)
+    valid_idx = np.array(valid_idx)
+
+    print(f"[INFO] Final stacked observations: {obs.shape}")
+
+    actions = actions[valid_idx]
+    rewards = rewards[valid_idx]
+    terminals = terminals[valid_idx]
+
+    print("[INFO] Frame stacking finished.")
+
     # Add channel dimension for grayscale image (1, 84, 84)
     # observations = observations[:, np.newaxis, :, :]
-    observations = np.repeat(observations[:, np.newaxis, :, :], 4, axis=1)
+    # observations = np.repeat(observations[:, np.newaxis, :, :], 4, axis=1)
 
     print("[INFO] Before creating MDPDataset:")
     print(f"Observations Type: {type(observations)}, Shape: {observations.shape}")
     print(f"Actions Type: {type(actions)}, Shape: {actions.shape}")
     print(f"Rewards Type: {type(rewards)}, Shape: {rewards.shape}")
     print(f"Terminals Type: {type(terminals)}, Shape: {terminals.shape}")
+
+    print(f"[INFO] Creating MDPDataset...")
 
     dataset = d3rlpy.dataset.MDPDataset(
         observations=observations,
