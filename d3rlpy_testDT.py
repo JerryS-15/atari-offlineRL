@@ -124,7 +124,7 @@ def main(args, parameters) -> None:
 
     print("------------------------------")
     # dataset = toMDP(args)
-    with open(f"./d3Buffers/{args.game}_converted_c1.h5", "rb") as f:
+    with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
         dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
     print("Dataset Loaded.")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
