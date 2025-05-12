@@ -217,6 +217,13 @@ def main(args, parameters) -> None:
     n_steps_per_epoch = dataset.transition_count // batch_size
     n_steps = n_steps_per_epoch * num_epoch
     print("[INFO] Starting training... please wait for epoch to begin.")
+
+    # Check if image and model both on GPU
+    obs = dataset.episodes[0].observations[0]
+    print("Observation type:", type(obs))
+    if isinstance(obs, torch.Tensor):
+        print("Observation device:", obs.device)
+
     dt.fit(
         dataset,
         n_steps=n_steps,
