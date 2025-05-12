@@ -2,12 +2,17 @@ import d3rlpy
 import numpy as np
 import argparse
 import os
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
 
 def toMDP(args, chunk=int(1e5), stack=4):
     setting = f"{args.env}_{args.seed}"
     buffer_name = f"{args.buffer_name}_{setting}"
+    buffer_dir = "./buffers"
 
     print(f"[INFO] Loading buffer: {buffer_name}")
+
+    # Action, reward, terminals
     actions = np.load(f"./buffers/{buffer_name}_action.npy")
     print(f"[INFO] Actions loaded. Shape: {actions.shape}")
     rewards = np.load(f"./buffers/{buffer_name}_reward.npy")
@@ -16,57 +21,103 @@ def toMDP(args, chunk=int(1e5), stack=4):
     terminals = 1 - terminals  # not_done -> done
     print(f"[INFO] Terminals computed. Shape: {terminals.shape}")
 
-    crt_size = rewards.shape[0]
+    # crt_size = rewards.shape[0]
     # print("Data size: ", crt_size)
+
+    print(f"[INFO] Observation loading starts.")
+
+    total_samples = rewards.shape[0]
+    num_chunks = (total_samples + chunk - 1) // chunk
+    
+    # Pre-allocate space
+    observations = np.empty((total_samples, 84, 84), dtype=np.uint8)
+    
+    # Concurrently loading all chunks
+    def load_chunk(chunk_idx):
+        start = chunk_idx * chunk
+        end = min((chunk_idx + 1) * chunk, total_samples)
+        path = os.path.join(buffer_dir, f"{buffer_name}_state_{end}.npy")
+        return chunk_idx, np.load(path)
+    
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        for chunk_idx, chunk_data in tqdm(
+            executor.map(load_chunk, range(num_chunks)),
+            total=num_chunks,
+            desc="Progress"
+        ):
+            start = chunk_idx * chunk
+            end = min((chunk_idx + 1) * chunk, total_samples)
+            observations[start:end] = chunk_data
+    
+    print(f"[INFO] Observation data fully loaded. Shape:", observations.shape, ", Type:", observations.dtype)
 
     # observations = np.array
 
-    crt = 0
-    end = min(chunk, crt_size + 1)
-    k = 1
-    while crt < crt_size + 1:
-        temp = np.load(f"./buffers/{buffer_name}_state_{end}.npy")
-        if end == chunk:
-            observations = temp
-            print(f"[INFO] Observation chunk {k} loaded, Shape: {observations.shape}.")
-        else:
-            observations = np.concatenate((observations, temp))
-            print(f"[INFO] Observation chunk {k} loaded, Shape: {observations.shape}.")
-        crt = end
-        end = min(end + chunk, crt_size + 1)
-        k = k + 1
-    print(f"[INFO] Observation data fully loaded. Shape:", observations.shape, ", Type:", observations.dtype)
+    # crt = 0
+    # end = min(chunk, crt_size + 1)
+    # k = 1
+    # while crt < crt_size + 1:
+    #     temp = np.load(f"./buffers/{buffer_name}_state_{end}.npy")
+    #     if end == chunk:
+    #         observations = temp
+    #         print(f"[INFO] Observation chunk {k} loaded, Shape: {observations.shape}.")
+    #     else:
+    #         observations = np.concatenate((observations, temp))
+    #         print(f"[INFO] Observation chunk {k} loaded, Shape: {observations.shape}.")
+    #     crt = end
+    #     end = min(end + chunk, crt_size + 1)
+    #     k = k + 1
+    # print(f"[INFO] Observation data fully loaded. Shape:", observations.shape, ", Type:", observations.dtype)
 
     print("Preparing frame stacks ...")
 
-    obs = []
-    # next_obs = []
-    valid_idx = []
+    # obs = []
+    # # next_obs = []
+    # valid_idx = []
 
-    for i in range(stack - 1, crt_size):
-        # Check if any early termination happened within the stack (optional)
-        is_valid = True
-        for j in range(i - stack + 1, i):
-            if terminals[j] == 1:  # episode ended
-                print("... A whole episode has finished frame stacking.")
-                is_valid = False
-                break
-        if not is_valid:
-            continue
+    # for i in range(stack - 1, crt_size):
+    #     # Check if any early termination happened within the stack (optional)
+    #     is_valid = True
+    #     for j in range(i - stack + 1, i):
+    #         if terminals[j] == 1:  # episode ended
+    #             print("... A whole episode has finished frame stacking.")
+    #             is_valid = False
+    #             break
+    #     if not is_valid:
+    #         continue
 
-        obs.append(observations[i - stack + 1:i + 1])         # shape: (4, 84, 84)
-        # next_obs.append(observations[i - stack + 2:i + 2])    # shape: (4, 84, 84)
-        valid_idx.append(i)
+    #     obs.append(observations[i - stack + 1:i + 1])         # shape: (4, 84, 84)
+    #     # next_obs.append(observations[i - stack + 2:i + 2])    # shape: (4, 84, 84)
+    #     valid_idx.append(i)
 
-    obs = np.stack(obs)  # (N, 4, 84, 84)
-    # next_obs = np.stack(next_obs)
-    valid_idx = np.array(valid_idx)
+    # obs = np.stack(obs)  # (N, 4, 84, 84)
+    # # next_obs = np.stack(next_obs)
+    # valid_idx = np.array(valid_idx)
 
-    print(f"[INFO] Final stacked observations: {obs.shape}")
+    done_indices = np.where(terminals == 1)[0]
+    
+    # Get valid mask (invalid from step stack_frames-1)
+    valid_mask = np.ones(total_samples, dtype=bool)
+    for idx in done_indices:
+        valid_mask[idx+1 : idx+stack] = False
+    
+    # Compute range of valid indices
+    valid_indices = np.arange(stack-1, total_samples)[valid_mask[stack-1:]]
+    
+    # as_strided used for stacking!
+    def stack_frames_zero_copy(arr, stack):
+        shape = (len(arr) - stack + 1, stack, *arr.shape[1:])
+        strides = (arr.strides[0], *arr.strides)
+        return np.lib.stride_tricks.as_strided(arr, shape=shape, strides=strides)
+    
+    stacked_obs = stack_frames_zero_copy(observations, stack)
+    stacked_obs = stacked_obs[valid_indices - (stack-1)]
 
-    actions = actions[valid_idx]
-    rewards = rewards[valid_idx]
-    terminals = terminals[valid_idx]
+    print(f"[INFO] Final stacked observations: {stacked_obs.shape}")
+
+    actions = actions[valid_indices]
+    rewards = rewards[valid_indices]
+    terminals = terminals[valid_indices]
 
     print("[INFO] Frame stacking finished.")
 
@@ -75,7 +126,8 @@ def toMDP(args, chunk=int(1e5), stack=4):
     # observations = np.repeat(observations[:, np.newaxis, :, :], 4, axis=1)
 
     print("[INFO] Before creating MDPDataset:")
-    print(f"Observations Type: {type(obs)}, Shape: {obs.shape}")
+    # print(f"Observations Type: {type(obs)}, Shape: {obs.shape}")
+    print(f"Observations Type: {type(stacked_obs)}, Shape: {stacked_obs.shape}")
     print(f"Actions Type: {type(actions)}, Shape: {actions.shape}")
     print(f"Rewards Type: {type(rewards)}, Shape: {rewards.shape}")
     print(f"Terminals Type: {type(terminals)}, Shape: {terminals.shape}")
@@ -83,7 +135,7 @@ def toMDP(args, chunk=int(1e5), stack=4):
     print(f"[INFO] Creating MDPDataset...")
 
     dataset = d3rlpy.dataset.MDPDataset(
-        observations=obs,
+        observations=stacked_obs,
         actions=actions,
         rewards=rewards,
         terminals=terminals,
@@ -96,9 +148,9 @@ def toMDP(args, chunk=int(1e5), stack=4):
     print(f"Dataset Type: {type(dataset)}")
     print(f"Dataset Shape: {dataset.size()}")
 
-    print("[INFO] Dataset Summary:")
-    print(f"Episodes[0]: {dataset.episodes[0].size()}, dtype: {type(dataset.episodes[0])}")
-    print(f"{dataset.episodes[0]}")
+    # print("[INFO] Dataset Summary:")
+    # print(f"Episodes[0]: {dataset.episodes[0].size()}, dtype: {type(dataset.episodes[0])}")
+    # print(f"{dataset.episodes[0]}")
     # print(f"Observation shape: {dataset.episodes[0].observation.size()}, dtype: {type(dataset.episodes[0].observation)}")
     # print(f"Action shape: {dataset.actions.shape}, dtype: {dataset.actions.dtype}")
     # print(f"Reward shape: {dataset.rewards.shape}, dtype: {dataset.rewards.dtype}")
