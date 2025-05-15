@@ -153,6 +153,17 @@ def main(args, parameters) -> None:
 
     # d3rlpy.envs.seed_env(env, args.seed)
 
+    gpu_dataset = d3rlpy.dataset.MDPDataset(
+        observations=np.array([transition.observation for episode in dataset.episodes for transition in episode.transitions]),
+        actions=np.array([transition.action for episode in dataset.episodes for transition in episode.transitions]),
+        rewards=np.array([transition.reward for episode in dataset.episodes for transition in episode.transitions]),
+        terminals=np.array([transition.terminal for episode in dataset.episodes for transition in episode.transitions]),
+        device=ctx  # Assign device
+    )
+
+    print(f"Data loaded to {ctx}.")
+
+
     batch_size = parameters["batch_size"]
     context_size = parameters["context_size"]
     target_return = parameters["target_return"]
@@ -229,7 +240,8 @@ def main(args, parameters) -> None:
         print("Observation device:", obs.device)
 
     dt.fit(
-        dataset,
+        # dataset,
+        gpu_dataset,
         n_steps=n_steps,
         n_steps_per_epoch=n_steps_per_epoch,
         # eval_env=env,
