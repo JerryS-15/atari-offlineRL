@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     parameters = {
         "batch_size": 256,  # 512
-        "context_size": 5,  # 50
+        "context_size": 20,  # 50, 5
         "target_return": 20,
         "learning_rate": 6e-4
     }
@@ -199,7 +199,7 @@ if __name__ == "__main__":
         compile_graph=args.compile,
     ).create(device=ctx)
 
-    num_epoch = 1  # 5 -> 1
+    num_epoch = 5  # 5 -> 1
     n_steps_per_epoch = dataset.transition_count // batch_size
     n_steps = n_steps_per_epoch * num_epoch
     print("[INFO] Starting training... please wait for epoch to begin.")
