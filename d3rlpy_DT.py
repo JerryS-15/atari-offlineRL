@@ -138,10 +138,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("------------------------------")
-    dataset = toMDP(args)
+    # dataset = toMDP(args)
+    with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
+        dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
+    print("Dataset Loaded.")
     print("------------------------------")
     ctx = "cuda:5" if torch.cuda.is_available() else "cpu:5"
     print(f"Using device ctx: {ctx}")
+
+    gpu_dataset = d3rlpy.dataset.MDPDataset(
+        observations=np.array([observation for episode in dataset.episodes for observation in episode.observations]),
+        actions=np.array([action for episode in dataset.episodes for action in episode.actions]),
+        rewards=np.array([reward for episode in dataset.episodes for reward in episode.rewards]),
+        terminals=np.array([terminal for episode in dataset.episodes for terminal in episode.terminated]),
+        device=ctx  # Assign to device
+    )
 
     eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
 
@@ -188,7 +199,7 @@ if __name__ == "__main__":
     print("[INFO] Starting training... please wait for epoch to begin.")
 
     dt.fit(
-        dataset,
+        gpu_dataset,
         n_steps=n_steps,
         n_steps_per_epoch=n_steps_per_epoch,
         # eval_env=env,
