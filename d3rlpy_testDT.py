@@ -129,7 +129,7 @@ def main(args, parameters) -> None:
     print("Dataset Loaded.")
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    ctx = "cuda:0" if torch.cuda.is_available() else "cpu:0"
+    ctx = "cuda:5" if torch.cuda.is_available() else "cpu:5"
     # device = torch.device('cuda:0')
     print(f"Using device: {device}")
     print(f"Using ctx: {ctx}")
@@ -152,17 +152,6 @@ def main(args, parameters) -> None:
     # )
 
     # d3rlpy.envs.seed_env(env, args.seed)
-
-    gpu_dataset = d3rlpy.dataset.MDPDataset(
-        observations=np.array([transition.observation for episode in dataset.episodes for transition in episode.transitions]),
-        actions=np.array([transition.action for episode in dataset.episodes for transition in episode.transitions]),
-        rewards=np.array([transition.reward for episode in dataset.episodes for transition in episode.transitions]),
-        terminals=np.array([transition.terminal for episode in dataset.episodes for transition in episode.transitions]),
-        device=ctx  # Assign device
-    )
-
-    print(f"Data loaded to {ctx}.")
-
 
     batch_size = parameters["batch_size"]
     context_size = parameters["context_size"]
