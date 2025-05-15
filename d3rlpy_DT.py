@@ -146,6 +146,9 @@ if __name__ == "__main__":
     ctx = "cuda:5" if torch.cuda.is_available() else "cpu:5"
     print(f"Using device ctx: {ctx}")
 
+    print("Dataset structure: ")
+    print("dataset.episodes[0]: ", dataset.episodes[0])
+
     gpu_dataset = d3rlpy.dataset.MDPDataset(
         observations=np.array([observation for episode in dataset.episodes for observation in episode.observations]),
         actions=np.array([action for episode in dataset.episodes for action in episode.actions]),
