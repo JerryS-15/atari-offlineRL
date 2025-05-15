@@ -229,8 +229,7 @@ def main(args, parameters) -> None:
         print("Observation device:", obs.device)
 
     dt.fit(
-        # dataset,
-        gpu_dataset,
+        dataset,
         n_steps=n_steps,
         n_steps_per_epoch=n_steps_per_epoch,
         # eval_env=env,
