@@ -148,13 +148,15 @@ if __name__ == "__main__":
 
     print("Dataset structure: ")
     # print("dataset.episodes[0]: ", dataset.episodes[0])
+    print(dir(dataset.episodes))
+    print("Episode structure: ")
     print(dir(dataset.episodes[0]))
 
     gpu_dataset = d3rlpy.dataset.MDPDataset(
         observations=np.array([observation for episode in dataset.episodes for observation in episode.observations]),
         actions=np.array([action for episode in dataset.episodes for action in episode.actions]),
         rewards=np.array([reward for episode in dataset.episodes for reward in episode.rewards]),
-        terminals=np.array([terminal for episode in dataset.episodes for terminal in episode.terminated]),
+        terminals=np.array([episode.terminated for episode in dataset.episodes]),
         device=ctx  # Assign to device
     )
 
