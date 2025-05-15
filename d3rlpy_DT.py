@@ -147,7 +147,8 @@ if __name__ == "__main__":
     print(f"Using device ctx: {ctx}")
 
     print("Dataset structure: ")
-    print("dataset.episodes[0]: ", dataset.episodes[0])
+    # print("dataset.episodes[0]: ", dataset.episodes[0])
+    print(dir(dataset.episodes[0]))
 
     gpu_dataset = d3rlpy.dataset.MDPDataset(
         observations=np.array([observation for episode in dataset.episodes for observation in episode.observations]),
