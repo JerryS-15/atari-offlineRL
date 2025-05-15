@@ -125,10 +125,14 @@ def main(args, parameters) -> None:
     print("------------------------------")
     # dataset = toMDP(args)
     with open(f"./d3Buffers/{args.game}_converted.h5", "rb") as f:
-        dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer())
+        dataset = d3rlpy.dataset.ReplayBuffer.load(f, d3rlpy.dataset.InfiniteBuffer(device='cuda:0'))
     print("Dataset Loaded.")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    ctx = "cuda:0" if torch.cuda.is_available() else "cpu:0"
+    # device = torch.device('cuda:0')
     print(f"Using device: {device}")
+    print(f"Using ctx: {ctx}")
     print("------------------------------")
 
     # env = gym.make(args.game)
@@ -211,7 +215,8 @@ def main(args, parameters) -> None:
         max_timestep=max_timestep,
         position_encoding_type=d3rlpy.PositionEncodingType.GLOBAL,
         compile_graph=args.compile,
-    ).create(device='cuda' if torch.cuda.is_available() else 'cpu')
+        device=ctx
+    ).create(device=ctx)
 
     num_epoch = 1  # 5 -> 1
     n_steps_per_epoch = dataset.transition_count // batch_size
