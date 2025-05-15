@@ -146,19 +146,19 @@ if __name__ == "__main__":
     ctx = "cuda:5" if torch.cuda.is_available() else "cpu:5"
     print(f"Using device ctx: {ctx}")
 
-    print("Dataset structure: ")
-    # print("dataset.episodes[0]: ", dataset.episodes[0])
-    print(dir(dataset.episodes))
-    print("Episode structure: ")
-    print(dir(dataset.episodes[0]))
+    # print("Dataset structure: ")
+    # # print("dataset.episodes[0]: ", dataset.episodes[0])
+    # print(dir(dataset.episodes))
+    # print("Episode structure: ")
+    # print(dir(dataset.episodes[0]))
 
-    gpu_dataset = d3rlpy.dataset.MDPDataset(
-        observations=np.array([observation for episode in dataset.episodes for observation in episode.observations]),
-        actions=np.array([action for episode in dataset.episodes for action in episode.actions]),
-        rewards=np.array([reward for episode in dataset.episodes for reward in episode.rewards]),
-        terminals=np.array([episode.terminated for episode in dataset.episodes]),
-        device=ctx  # Assign to device
-    )
+    # gpu_dataset = d3rlpy.dataset.MDPDataset(
+    #     observations=np.array([observation for episode in dataset.episodes for observation in episode.observations]),
+    #     actions=np.array([action for episode in dataset.episodes for action in episode.actions]),
+    #     rewards=np.array([reward for episode in dataset.episodes for reward in episode.rewards]),
+    #     terminals=np.array([episode.terminated for episode in dataset.episodes]),
+    #     device=ctx  # Assign to device
+    # )
 
     eval_env, _, _, _ = utils.make_env(args.game, atari_preprocessing)
 
@@ -204,8 +204,9 @@ if __name__ == "__main__":
     n_steps = n_steps_per_epoch * num_epoch
     print("[INFO] Starting training... please wait for epoch to begin.")
 
+    # print("[INFO] Model is on:", next(dt_impl.model.parameters()).device)
     dt.fit(
-        gpu_dataset,
+        dataset,
         n_steps=n_steps,
         n_steps_per_epoch=n_steps_per_epoch,
         # eval_env=env,
