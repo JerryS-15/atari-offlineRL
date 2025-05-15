@@ -215,7 +215,6 @@ def main(args, parameters) -> None:
         max_timestep=max_timestep,
         position_encoding_type=d3rlpy.PositionEncodingType.GLOBAL,
         compile_graph=args.compile,
-        device=ctx
     ).create(device=ctx)
 
     num_epoch = 1  # 5 -> 1
